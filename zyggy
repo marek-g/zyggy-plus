@@ -42,8 +42,6 @@ class App:
 
         self.window         = Gtk.Window()
 
-        self.done = False
-
         self.set_signals()
         self.draw_ui()
 
@@ -72,7 +70,7 @@ class App:
         active = self.cmb_mode.get_active()
 
         if active == DATASETS:
-            cmd = ["zfs", "list", "-o", "name,used,avail,volsize,mountpoint", "-t", "filesystem"]
+            cmd = ["zfs", "list", "-o", "name,mountpoint,mounted,encryption,compress,recordsize,refcompressratio,used,avail,referenced", "-t", "filesystem"]
         elif active == SNAPSHOTS:
             cmd = ["zfs", "list", "-o", "name,used,avail,volsize,mountpoint", "-t", "snapshot"]
         elif active == VOLUMES:
@@ -93,18 +91,17 @@ class App:
         result = []
         output = stdout.decode('utf-8')
         for line in output.splitlines():
-            rows = line.split()
-            result.append(rows)
+            cols = line.split()
+            result.append(cols)
 
-        columns = ["NAME", "USED", "AVAIL", "VOLSIZE", "MOUNTPOINT"]
-        n_columns = 5
+        columns = []
+        n_columns = 0
         if len(result) > 0:
             n_columns = len(result[0])
             columns = result[0]
 
-        if self.done == False:
-            self.list.set_column_types([*([str]*n_columns)])
-            self.done = True
+        self.list = Gtk.ListStore()
+        self.list.set_column_types([*([str]*n_columns)])
 
         for row in result[1:]:
             self.list.append(row)
@@ -169,7 +166,7 @@ class App:
         header.pack_end(box_right)
 
         self.window.set_titlebar(header)
-        self.window.set_default_size(800, 600)
+        self.window.set_default_size(1024, 600)
         self.window.set_border_width(10)
         self.window.set_position(Gtk.WindowPosition.CENTER)
         self.window.connect("destroy", Gtk.main_quit)
