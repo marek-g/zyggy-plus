@@ -166,6 +166,7 @@ class App:
         header.pack_end(box_right)
 
         self.window.set_titlebar(header)
+        self.window.set_icon_name("gtk-harddisk")
         self.window.set_default_size(1024, 600)
         self.window.set_border_width(10)
         self.window.set_position(Gtk.WindowPosition.CENTER)
@@ -468,7 +469,7 @@ class App:
     def on_about_click(self, button):
         dialog = Gtk.AboutDialog()
         dialog.set_program_name("Zyggy Plus")
-        dialog.set_icon_name("blockify")
+        dialog.set_icon_name("gtk-harddisk")
         dialog.set_version("0.3")
         dialog.set_authors(["Manoel de Souza <manoel.desouza@outlook.com.br>", "Marek Gibek <marek-dev@yandex.com>"])
         dialog.set_copyright("2022 (c) Marek Gibek\n2021 (c) Manoel de Souza")
