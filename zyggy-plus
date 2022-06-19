@@ -159,7 +159,7 @@ class App:
         # box_right.add(self.btn_help)
         box_right.add(self.btn_about)
 
-        header.set_title("Zyggy")
+        header.set_title("Zyggy Plus")
         header.set_subtitle("ZFS Administration GUI")
         header.set_show_close_button(True)
         header.pack_start(box_left)
@@ -467,15 +467,15 @@ class App:
 
     def on_about_click(self, button):
         dialog = Gtk.AboutDialog()
-        dialog.set_program_name("Zyggy")
+        dialog.set_program_name("Zyggy Plus")
         dialog.set_icon_name("blockify")
-        dialog.set_version("0.2")
-        dialog.set_authors(["Manoel de Souza <manoel.desouza@outlook.com.br>"])
-        dialog.set_copyright("2021 (c) Manoel de Souza")
+        dialog.set_version("0.3")
+        dialog.set_authors(["Manoel de Souza <manoel.desouza@outlook.com.br>", "Marek Gibek <marek-dev@yandex.com>"])
+        dialog.set_copyright("2022 (c) Marek Gibek\n2021 (c) Manoel de Souza")
         dialog.set_license("The MIT License (MIT)")
         dialog.set_comments("ZFS Administration GUI")
-        dialog.set_website_label("Zyggy in GITHUB")
-        dialog.set_website("http://github.com/manoeldesouza/zyggy")
+        dialog.set_website_label("Zyggy Plus in GITHUB")
+        dialog.set_website("https://github.com/marek-g/zyggy-plus")
         
         dialog.run()
         dialog.destroy()

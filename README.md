@@ -1,8 +1,8 @@
-# ZYGGY
+# ZYGGY PLUS
 ## ZFS Administration GUI
 
 
-Zyggy is a very simple GUI for basic ZFS administration. The system provides graphical access for most frequently 
+Zyggy Plus is a very simple GUI for basic ZFS administration. The system provides graphical access for most frequently 
 used ZFS and ZPOOL commands, as listed below:
 
 Commands available to date:
@@ -20,11 +20,11 @@ Commands available to date:
  - zpool get all
 
 
-![zyggy](https://github.com/manoeldesouza/zyggy/blob/master/screenshot/zyggy.png)
+![zyggy](https://github.com/marek-g/zyggy-plus/blob/master/screenshot/zyggy.png)
 
 
-Zyggy is the GTK version of a previous ncurses-based development called ZC (ZFS commander) available in
-https://github.com/manoeldesouza/zc
+Zyggy Plus is extension of the original version available in
+https://github.com/manoeldesouza/zyggy
 
 
 ## Dependencies
