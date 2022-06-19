@@ -70,11 +70,11 @@ class App:
         active = self.cmb_mode.get_active()
 
         if active == DATASETS:
-            cmd = ["zfs", "list", "-H", "-o", "name,mountpoint,mounted,encryption,compress,refcompressratio,recordsize,used,avail,referenced", "-t", "filesystem"]
-            columns = ["NAME", "MOUNTPOINT", "MOUNTED", "ENCRYPTION", "COMPRESSION", "RATIO", "RECORD", "USED", "AVAIL", "REFER"]
+            cmd = ["zfs", "list", "-H", "-o", "name,mountpoint,mounted,encryption,compress,refcompressratio,used,logicalused,referenced,avail", "-t", "filesystem"]
+            columns = ["NAME", "MOUNTPOINT", "MOUNTED", "ENCRYPTION", "COMPRESSION", "RATIO", "USED", "LOGICAL", "REFER", "AVAIL"]
         elif active == SNAPSHOTS:
-            cmd = ["zfs", "list", "-H", "-o", "name,mountpoint,used,avail,volsize", "-t", "snapshot"]
-            columns = ["NAME", "MOUNTPOINT", "USED", "AVAIL", "VOLSIZE"]
+            cmd = ["zfs", "list", "-H", "-o", "name,mountpoint,creation,used,referenced", "-t", "snapshot"]
+            columns = ["NAME", "MOUNTPOINT", "CREATION", "USED", "REFERENCED"]
         elif active == VOLUMES:
             cmd = ["zfs", "list", "-H", "-o", "name,mountpoint,used,avail,volsize", "-t", "volume"]
             columns = ["NAME", "MOUNTPOINT", "USED", "AVAIL", "VOLSIZE"]
