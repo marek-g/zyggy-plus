@@ -70,13 +70,17 @@ class App:
         active = self.cmb_mode.get_active()
 
         if active == DATASETS:
-            cmd = ["zfs", "list", "-o", "name,mountpoint,mounted,encryption,compress,recordsize,refcompressratio,used,avail,referenced", "-t", "filesystem"]
+            cmd = ["zfs", "list", "-H", "-o", "name,mountpoint,mounted,encryption,compress,refcompressratio,recordsize,used,avail,referenced", "-t", "filesystem"]
+            columns = ["NAME", "MOUNTPOINT", "MOUNTED", "ENCRYPTION", "COMPRESSION", "RATIO", "RECORD", "USED", "AVAIL", "REFER"]
         elif active == SNAPSHOTS:
-            cmd = ["zfs", "list", "-o", "name,used,avail,volsize,mountpoint", "-t", "snapshot"]
+            cmd = ["zfs", "list", "-H", "-o", "name,mountpoint,used,avail,volsize", "-t", "snapshot"]
+            columns = ["NAME", "MOUNTPOINT", "USED", "AVAIL", "VOLSIZE"]
         elif active == VOLUMES:
-            cmd = ["zfs", "list", "-o", "name,used,avail,volsize,mountpoint", "-t", "volume"]
+            cmd = ["zfs", "list", "-H", "-o", "name,mountpoint,used,avail,volsize", "-t", "volume"]
+            columns = ["NAME", "MOUNTPOINT", "USED", "AVAIL", "VOLSIZE"]
         elif active == POOLS:
-            cmd = ["zpool", "list", "-o", "name,alloc,free,size,health"]
+            cmd = ["zpool", "list", "-H", "-o", "name,alloc,free,size,health"]
+            columns = ["NAME", "ALLOC", "FREE", "SIZE", "HEALTH"]
 
         process = Popen(cmd, stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()
@@ -91,19 +95,15 @@ class App:
         result = []
         output = stdout.decode('utf-8')
         for line in output.splitlines():
-            cols = line.split()
+            cols = re.split(r'\t', line)
             result.append(cols)
 
-        columns = []
-        n_columns = 0
-        if len(result) > 0:
-            n_columns = len(result[0])
-            columns = result[0]
+        n_columns = len(columns)
 
         self.list = Gtk.ListStore()
         self.list.set_column_types([*([str]*n_columns)])
 
-        for row in result[1:]:
+        for row in result:
             self.list.append(row)
 
         self.table.set_model(self.list)
@@ -447,10 +447,10 @@ class App:
 
         cmd = []
         if mode == DATASETS or mode == VOLUMES or mode == SNAPSHOTS:
-            cmd = ["zfs", "get", "all", target]
+            cmd = ["zfs", "get", "all", "-H", target]
 
         elif mode == POOLS:
-            cmd = ["zpool", "get", "all", target]
+            cmd = ["zpool", "get", "all", "-H", target]
 
         else: return
 
@@ -458,7 +458,7 @@ class App:
         stdout, stderr = process.communicate()
         
         self.check_error(stderr)
-        App.list_dialog(stdout)
+        App.list_dialog(['NAME', 'PROPERTY', 'VALUE', 'SOURCE'], stdout)
 
         self.update(button)
 
@@ -572,7 +572,7 @@ class App:
         return None, None
 
     @staticmethod
-    def list_dialog(stdout):
+    def list_dialog(columns, stdout):
         list_store     = Gtk.ListStore()
         local_table    = Gtk.TreeView()
         dialog         = Gtk.Window()
@@ -583,20 +583,20 @@ class App:
 
         output = stdout.decode('utf-8')
         for line in output.splitlines():
-            rows = re.split(r'\s{2,}', line)
-            result.append(rows)
+            cols = re.split(r'\t', line)
+            result.append(cols)
 
-        n_columns = len(result[0])
+        n_columns = len(columns)
         
         list_store.clear()
         list_store.set_column_types([*([str]*n_columns)])
 
-        for row in result[1:]:
+        for row in result:
             list_store.append(row)
 
         local_table.set_model(list_store)
 
-        for i, column_title in enumerate(result[0]):
+        for i, column_title in enumerate(columns):
             renderer = Gtk.CellRendererText()
             column = Gtk.TreeViewColumn(column_title, renderer, text=i)
             column.set_resizable(True)
