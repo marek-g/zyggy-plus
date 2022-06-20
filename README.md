@@ -14,6 +14,10 @@ Commands available to date:
  - zfs promote
  - zfs rollback
  - zfs remove
+ - zfs mount
+ - zfs unmount
+ - zfs load-key
+ - zfs unload-key
  - zfs get all
  - zpool rename
  - zpool remove

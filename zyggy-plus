@@ -58,6 +58,9 @@ class App:
         self.btn_properties.connect("clicked", self.on_properties_click)
         self.btn_help.connect("clicked",       self.on_help_click)
         self.btn_about.connect("clicked",      self.on_about_click)
+
+        self.table.connect("button-press-event", self.on_popup_menu)
+
         self.window.connect("key-press-event", self.on_window_keypress)
 
     def update(self, button):
@@ -70,8 +73,8 @@ class App:
         active = self.cmb_mode.get_active()
 
         if active == DATASETS:
-            cmd = ["zfs", "list", "-H", "-o", "name,mountpoint,mounted,encryption,compress,refcompressratio,used,logicalused,referenced,avail", "-t", "filesystem"]
-            columns = ["NAME", "MOUNTPOINT", "MOUNTED", "ENCRYPTION", "COMPRESSION", "RATIO", "USED", "LOGICAL", "REFER", "AVAIL"]
+            cmd = ["zfs", "list", "-H", "-o", "name,mountpoint,mounted,encryption,keystatus,compress,refcompressratio,used,logicalused,referenced,avail", "-t", "filesystem"]
+            columns = ["NAME", "MOUNTPOINT", "MOUNTED", "ENCRYPTION", "KEYSTATUS", "COMPRESSION", "RATIO", "USED", "LOGICAL", "REFER", "AVAIL"]
         elif active == SNAPSHOTS:
             cmd = ["zfs", "list", "-H", "-o", "name,mountpoint,creation,used,referenced", "-t", "snapshot"]
             columns = ["NAME", "MOUNTPOINT", "CREATION", "USED", "REFERENCED"]
@@ -176,6 +179,76 @@ class App:
         self.window.add(frame_contents)
 
         self.window.show_all()
+
+    def on_popup_menu(self, widget, event):
+        if event.button == 3:
+            mode = self.cmb_mode.get_active()
+            target = self.get_target(event.x, event.y)
+            if target == "": return
+
+            if mode == DATASETS:
+                menu = Gtk.Menu()
+
+                load_key = Gtk.MenuItem()
+                load_key.set_label("Load encryption key")
+                load_key.connect("activate", self.on_load_key, target)
+
+                unload_key = Gtk.MenuItem()
+                unload_key.set_label("Unload encryption key")
+                unload_key.connect("activate", self.on_unload_key, target)
+
+                mount = Gtk.MenuItem()
+                mount.set_label("Mount")
+                mount.connect("activate", self.on_mount, target)
+
+                unmount = Gtk.MenuItem()
+                unmount.set_label("Umnount")
+                unmount.connect("activate", self.on_unmount, target)
+
+                menu.append(load_key)
+                menu.append(unload_key)
+                menu.append(Gtk.SeparatorMenuItem())
+                menu.append(mount)
+                menu.append(unmount)
+                menu.show_all()
+
+                menu.popup(None, None, None, None, event.button, event.time)
+
+    def on_load_key(self, widget, target):
+        password = App.input_dialog("Datasets", "Enter Password for Dataset {}".format(target), "", password=True)
+        if password is None:
+            return
+
+        cmd = ["zfs", "load-key", target]
+        process = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        _, stderr = process.communicate(input=(password).encode())
+
+        self.check_error(stderr)
+        self.update(None)
+
+    def on_unload_key(self, widget, target):
+        cmd = ["zfs", "unload-key", target]
+        process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        _, stderr = process.communicate()
+
+        self.check_error(stderr)
+        self.update(None)
+
+    def on_mount(self, widget, target):
+        cmd = ["zfs", "mount", target]
+        process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        _, stderr = process.communicate()
+
+        self.check_error(stderr)
+        self.update(None)
+
+    def on_unmount(self, widget, target):
+        cmd = ["zfs", "unmount", target]
+        process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        _, stderr = process.communicate()
+
+        self.check_error(stderr)
+        self.update(None)
 
     def on_window_keypress(self, widget, event):
         '''Associates Function keys with Button clicks'''
@@ -490,6 +563,16 @@ class App:
 
         return target
 
+    def get_target(self, x, y):
+        target = ""
+
+        path = self.table.get_path_at_pos(x, y)
+        if path is not None:
+            path, _, _, _ = path
+            target = self.list[path][0]
+
+        return target
+
     def check_error(self, stderr):
         if stderr != b'':
             self.list.clear()
@@ -527,8 +610,10 @@ class App:
         return False
 
     @staticmethod
-    def input_dialog(title, text, value):
+    def input_dialog(title, text, value, password=False):
         entry = Gtk.Entry()
+        if password:
+            entry.set_visibility(False)
         entry.set_text(value)
         entry.set_activates_default(True)
 
