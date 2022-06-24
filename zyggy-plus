@@ -104,15 +104,25 @@ class App:
         n_columns = len(columns)
 
         self.list = Gtk.ListStore()
-        self.list.set_column_types([*([str]*n_columns)])
+        # set column types to str and add 2 columns for foreground and foreground-set
+        self.list.set_column_types([str]*(n_columns) + [str,int])
 
+        # append rows to list
         for row in result:
+            # add columns with foreground color
+            if active == DATASETS and row[2] == "yes":
+                row.append("#00CC00")
+                row.append(1)
+            else:
+                row.append("")
+                row.append(0)
+
             self.list.append(row)
 
         self.table.set_model(self.list)
         for i, column_title in enumerate(columns):
             renderer = Gtk.CellRendererText()
-            column = Gtk.TreeViewColumn(column_title, renderer, text=i)
+            column = Gtk.TreeViewColumn(column_title, renderer, text=i, foreground=n_columns, foreground_set=n_columns+1)
             column.set_resizable(True)
             self.table.append_column(column)
 
