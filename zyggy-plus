@@ -193,7 +193,7 @@ class App:
     def on_popup_menu(self, widget, event):
         if event.button == 3:
             mode = self.cmb_mode.get_active()
-            target = self.get_target(event.x, event.y)
+            target = self.get_target_xy(event.x, event.y)
             if target == "": return
 
             if mode == DATASETS:
@@ -573,7 +573,7 @@ class App:
 
         return target
 
-    def get_target(self, x, y):
+    def get_target_xy(self, x, y):
         target = ""
 
         path = self.table.get_path_at_pos(x, y)
