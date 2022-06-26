@@ -625,9 +625,12 @@ class App:
         if password:
             entry.set_visibility(False)
         entry.set_text(value)
+
+        # enter key should trigger the default action
         entry.set_activates_default(True)
 
         dialog = Gtk.MessageDialog(title=title, buttons=Gtk.ButtonsType.OK_CANCEL, text=text)
+        dialog.set_default_response(Gtk.ResponseType.OK) # make OK button the default
         # dialog.connect("destroy", dialog.destroy)
         dialog.set_border_width(8)
         dialog.vbox.pack_start(entry, False, False, 6)
