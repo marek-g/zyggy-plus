@@ -40,6 +40,9 @@ class App:
         self.list           = Gtk.ListStore()
         self.table          = Gtk.TreeView()
 
+        self.btn_mount_encrypted = Gtk.Button.new_with_label("Mount encrypted")
+        self.btn_unmount_encrypted = Gtk.Button.new_with_label("Unmount encrypted")
+
         self.window         = Gtk.Window()
 
         self.set_signals()
@@ -60,6 +63,9 @@ class App:
         self.btn_about.connect("clicked",      self.on_about_click)
 
         self.table.connect("button-press-event", self.on_popup_menu)
+
+        self.btn_mount_encrypted.connect("clicked", self.on_mount_encrypted_click)
+        self.btn_unmount_encrypted.connect("clicked", self.on_unmount_encrypted_click)
 
         self.window.connect("key-press-event", self.on_window_keypress)
 
@@ -148,6 +154,7 @@ class App:
         box_left       = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         box_right      = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         box_contents   = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        box_buttons    = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         frame_contents = Gtk.Frame()
 
         header = Gtk.HeaderBar()
@@ -156,6 +163,10 @@ class App:
         scrollable_treelist.set_vexpand(True)
         scrollable_treelist.add(self.table)
         box_contents.add(scrollable_treelist)
+
+        box_buttons.add(self.btn_mount_encrypted)
+        box_buttons.add(self.btn_unmount_encrypted)
+        box_contents.add(box_buttons)
 
         box_left.add(self.btn_refresh)
         box_left.add(self.btn_new)
@@ -564,6 +575,58 @@ class App:
         dialog.run()
         dialog.destroy()
 
+    def on_mount_encrypted_click(self, button):
+        password = App.input_dialog("Datasets", "Enter Password for encrypted drives", "", password=True)
+        if password is None:
+            return
+
+        cmd = ["zfs", "load-key", "ssd/encrypted"]
+        process = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        _, stderr = process.communicate(input=(password).encode())
+        if not self.check_error(stderr):
+            self.update(button)
+            return
+
+        cmd = ["zfs", "mount", "ssd/encrypted/ext"]
+        process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        _, stderr = process.communicate()
+        if not self.check_error(stderr):
+            self.update(button)
+            return
+
+        cmd = ["sudo", "veracrypt", "--text", "--non-interactive", "--stdin", "/dev/nvme0n1p6", "/media/veracrypt1"]
+        process = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        _, stderr = process.communicate(input=(password).encode())
+        if not self.check_error(stderr):
+            self.update(button)
+            return
+
+        self.update(button)
+
+    def on_unmount_encrypted_click(self, button):
+        cmd = ["zfs", "unmount", "ssd/encrypted/ext"]
+        process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        _, stderr = process.communicate()
+        if not self.check_error(stderr):
+            self.update(button)
+            return
+
+        cmd = ["zfs", "unload-key", "ssd/encrypted"]
+        process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        _, stderr = process.communicate()
+        if not self.check_error(stderr):
+            self.update(button)
+            return
+
+        cmd = ["sudo", "veracrypt", "--text", "--non-interactive", "-d"]
+        process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        _, stderr = process.communicate()
+        if not self.check_error(stderr):
+            self.update(button)
+            return
+
+        self.update(button)
+
     def get_target(self):
         selection = self.table.get_selection()
         m, s = selection.get_selected()
@@ -589,6 +652,8 @@ class App:
             error = stderr.decode('utf-8')
             print("Error:", error)
             App.error_dialog(error)
+            return False
+        return True
 
     @staticmethod
     def error_dialog(msg):
