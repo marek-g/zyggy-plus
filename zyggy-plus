@@ -594,9 +594,23 @@ class App:
             self.update(button)
             return
 
-        cmd = ["sudo", "veracrypt", "--text", "--non-interactive", "--stdin", "/dev/nvme0n1p6", "/media/veracrypt1"]
+        cmd = ["sudo", "veracrypt", "--text", "--non-interactive", "--stdin", "--filesystem=none", "/dev/nvme0n1p6", "/media/veracrypt1"]
         process = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=PIPE)
         _, stderr = process.communicate(input=(password).encode())
+        if not self.check_error(stderr):
+            self.update(button)
+            return
+
+        cmd = ["sudo", "mkdir", "/media/veracrypt1"]
+        process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        _, stderr = process.communicate()
+        if not self.check_error(stderr):
+            self.update(button)
+            return
+
+        cmd = ["sudo", "mount", "-o", "umask=000", "/dev/mapper/veracrypt1", "/media/veracrypt1"]
+        process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        _, stderr = process.communicate()
         if not self.check_error(stderr):
             self.update(button)
             return
