@@ -601,7 +601,7 @@ class App:
             self.update(button)
             return
 
-        cmd = ["sudo", "mkdir", "/media/veracrypt1"]
+        cmd = ["sudo", "mkdir", "-p", "/media/veracrypt1"]
         process = Popen(cmd, stdout=PIPE, stderr=PIPE)
         _, stderr = process.communicate()
         if not self.check_error(stderr):
