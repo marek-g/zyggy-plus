@@ -608,7 +608,7 @@ class App:
             self.update(button)
             return
 
-        cmd = ["sudo", "mount", "-o", "umask=000", "/dev/mapper/veracrypt1", "/media/veracrypt1"]
+        cmd = ["sudo", "mount", "-o", "umask=000,uid=1000,gid=1001", "/dev/mapper/veracrypt1", "/media/veracrypt1"]
         process = Popen(cmd, stdout=PIPE, stderr=PIPE)
         _, stderr = process.communicate()
         if not self.check_error(stderr):
