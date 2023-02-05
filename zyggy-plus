@@ -7,6 +7,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Gdk
 from subprocess import Popen, PIPE
+from datetime import datetime
 
 DATASETS  = 0
 SNAPSHOTS = 1
@@ -439,7 +440,9 @@ class App:
         value = None
         cmd = []
         if mode == DATASETS:
-            if target != "": target_formatted = target + "@"
+            if target != "":
+                today = datetime.today()
+                target_formatted = target + "@" + today.strftime("%Y-%m-%d")
             else: return
 
             value = App.input_dialog("Datasets", "Enter new Snapshot name for Dataset {}".format(target), target_formatted)
@@ -455,7 +458,9 @@ class App:
             else: return
 
         elif mode == VOLUMES:
-            if target != "": target_formatted = target + "@"
+            if target != "":
+                today = datetime.today()
+                target_formatted = target + "@" + today.strftime("%Y-%m-%d")
             else: return
 
             value = App.input_dialog("Datasets", "Enter new Snapshot name for Volume {}".format(target), target_formatted)
