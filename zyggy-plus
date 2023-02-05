@@ -121,7 +121,8 @@ class App:
                 row.append("#00CC00")
                 row.append(1)
             else:
-                row.append("")
+                style_ctx = Gtk.StyleContext();
+                row.append(style_ctx.get_color(Gtk.StateFlags.NORMAL).to_string())
                 row.append(0)
 
             self.list.append(row)
